@@ -9,7 +9,7 @@ def create_folder_for_data(name='dataset', path='../../') -> str:
 
     :param name: Folder name, default dataset
     :param path: Path of folder, default '../../'
-    :return: name of folder
+    :return: path to created folder
     """
     if not os.path.exists(path + name):
         os.mkdir(path + name)
@@ -24,7 +24,7 @@ def create_folder_for_data(name='dataset', path='../../') -> str:
             os.mkdir(path + name)
         else:
             return create_folder_for_data(name)
-    return name
+    return path + name
 
 
 def remove_all_folders_with_name(name='dataset', path='../../', without='') -> None:
