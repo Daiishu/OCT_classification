@@ -54,7 +54,7 @@ def remove_ds_store_files(path='../../dataset') -> None:
     """
     Function to remove necessary file in dataset
 
-    :param path: path of dataset
+    :param path: path of dataset, default '../../dataset'
     :return: None
     """
     for p in os.listdir(path):
