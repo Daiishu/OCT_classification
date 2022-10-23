@@ -6,6 +6,14 @@ import folder_creation
 
 def create_equal_samle_of_data(path_to_orginal_dataset="../../OCT2017",
                                path='../../', name='dataset') -> str:
+    """
+    Function to create equal dataset from orginal data by randomly trimming the data
+
+    :param path_to_orginal_dataset: path to orginal data set
+    :param path: path to new dataset destination
+    :param name: name of creating folder
+    :return: path of created data
+    """
     path = folder_creation.create_folder_for_data(name=name, path=path)
 
     shutil.copytree(src=path_to_orginal_dataset + '/val', dst=path + '/val')
@@ -43,6 +51,12 @@ def create_equal_samle_of_data(path_to_orginal_dataset="../../OCT2017",
 
 
 def remove_ds_store_files(path='../../dataset') -> None:
+    """
+    Function to remove necessary file in dataset
+
+    :param path: path of dataset
+    :return: None
+    """
     for p in os.listdir(path):
         if os.path.exists(path + '/' + p + '/.DS_Store'):
             os.remove(path + '/' + p + '/.DS_Store')
