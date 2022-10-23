@@ -1,7 +1,3 @@
-import numpy as np
-import tensorflow as tf
-import matplotlib.pyplot as plt
-import os
+import folder_creation
 
-if not os.path.exists('../../dataset'):
-    os.mkdir('../../dataset')
+name = folder_creation.create_folder_for_data()
