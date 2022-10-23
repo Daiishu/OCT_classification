@@ -1,7 +1,8 @@
 import os
 import random
 import shutil
-import folder_creation
+import prepare_data.folder_creation as folder_creation
+from tensorflow import keras
 
 
 def create_equal_sample_of_data(path_to_original_dataset="../../OCT2017",
@@ -63,3 +64,40 @@ def remove_ds_store_files(path='../../dataset') -> None:
         for pp in os.listdir(path + '/' + p):
             if os.path.exists(path + '/' + p + '/' + pp + '/.DS_Store'):
                 os.remove(path + '/' + p + '/' + pp + '/.DS_Store')
+
+
+def load_data_using_keras(path='../../dataset', path_to_original_dataset="../../OCT2017") -> tuple:
+    """
+    Creating tensorflow datasets
+
+    :param path_to_original_dataset: path to original data set
+    :param path: path to new dataset destination
+    :return: train_ds, val_ds, test_ds
+    """
+
+    path = create_equal_sample_of_data(path_to_original_dataset=path_to_original_dataset, path=path)
+    train_ds = keras.utils.image_dataset_from_directory(
+        directory=path + '/train/',
+        labels='inferred',
+        label_mode='categorical',
+        color_mode='grayscale',
+        batch_size=32,
+        image_size=(256, 256))
+
+    val_ds = keras.utils.image_dataset_from_directory(
+        directory=path + '/val/',
+        labels='inferred',
+        label_mode='categorical',
+        color_mode='grayscale',
+        batch_size=32,
+        image_size=(256, 256))
+
+    test_ds = keras.utils.image_dataset_from_directory(
+        directory=path + '/test/',
+        labels='inferred',
+        label_mode='categorical',
+        color_mode='grayscale',
+        batch_size=32,
+        image_size=(256, 256))
+
+    return train_ds, val_ds, test_ds
