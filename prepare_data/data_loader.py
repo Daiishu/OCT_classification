@@ -4,33 +4,33 @@ import shutil
 import folder_creation
 
 
-def create_equal_samle_of_data(path_to_orginal_dataset="../../OCT2017",
-                               path='../../', name='dataset') -> str:
+def create_equal_sample_of_data(path_to_original_dataset="../../OCT2017",
+                                path='../../', name='dataset') -> str:
     """
-    Function to create equal dataset from orginal data by randomly trimming the data
+    Function to create equal dataset from original data by randomly trimming the data
 
-    :param path_to_orginal_dataset: path to orginal data set
+    :param path_to_original_dataset: path to original data set
     :param path: path to new dataset destination
     :param name: name of creating folder
     :return: path of created data
     """
     path = folder_creation.create_folder_for_data(name=name, path=path)
 
-    shutil.copytree(src=path_to_orginal_dataset + '/val', dst=path + '/val')
-    shutil.copytree(src=path_to_orginal_dataset + '/test', dst=path + '/test')
+    shutil.copytree(src=path_to_original_dataset + '/val', dst=path + '/val')
+    shutil.copytree(src=path_to_original_dataset + '/test', dst=path + '/test')
 
     remove_ds_store_files(path=path)
 
     os.mkdir(path + "/train")
 
-    classes = os.listdir(path_to_orginal_dataset + "/train")
+    classes = os.listdir(path_to_original_dataset + "/train")
     class_size = {}
 
     for cl in classes:
-        class_size[cl] = len(os.listdir(path_to_orginal_dataset + "/train/" + cl))
+        class_size[cl] = len(os.listdir(path_to_original_dataset + "/train/" + cl))
 
     min_class_size = min(class_size, key=class_size.get)
-    shutil.copytree(src=path_to_orginal_dataset + '/train/' + min_class_size,
+    shutil.copytree(src=path_to_original_dataset + '/train/' + min_class_size,
                     dst=path + '/train/' + min_class_size)
 
     if os.path.exists(path + '/train/' + min_class_size + '/.DS_Store'):
@@ -40,12 +40,12 @@ def create_equal_samle_of_data(path_to_orginal_dataset="../../OCT2017",
     for cl in classes:
         if cl != min_class_size:
             os.mkdir(path + "/train/" + cl)
-            list_of_images = os.listdir(path_to_orginal_dataset + "/train/" + cl)
+            list_of_images = os.listdir(path_to_original_dataset + "/train/" + cl)
             if '.DS_Store' in list_of_images:
                 list_of_images.remove('.DS_Store')
             random_images = random.sample(list_of_images, class_size[min_class_size])
             for image in random_images:
-                shutil.copyfile(path_to_orginal_dataset + "/train/" + cl + "/" + image,
+                shutil.copyfile(path_to_original_dataset + "/train/" + cl + "/" + image,
                                 path + "/train/" + cl + "/" + image)
     return path
 
