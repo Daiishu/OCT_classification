@@ -8,6 +8,7 @@ train_ds, val_ds, test_ds = load_data_using_keras(path='../', path_to_original_d
 classes_names = train_ds.class_names
 
 plt.figure(figsize=(10, 20))
+plt.suptitle('Visualization first batch of train dataset', fontsize=20)
 for images, labels in train_ds.take(1):
     for i in range(32):
         ax = plt.subplot(8, 4, i + 1)

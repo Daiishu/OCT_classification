@@ -66,23 +66,31 @@ def remove_ds_store_files(path='../../dataset') -> None:
                 os.remove(path + '/' + p + '/' + pp + '/.DS_Store')
 
 
-def load_data_using_keras(path='../../dataset', path_to_original_dataset="../../OCT2017") -> tuple:
+def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017",
+                          generate_new_data=True, name='dataset', im_size=(256, 256)) -> tuple:
     """
     Creating tensorflow datasets
 
     :param path_to_original_dataset: path to original data set
     :param path: path to new dataset destination
+    :param generate_new_data: default True
+    :param name: Name of dataset
+    :param im_size: default (256, 256)
+    :type im_size: tuple[int, int]
     :return: train_ds, val_ds, test_ds
     """
 
-    path = create_equal_sample_of_data(path_to_original_dataset=path_to_original_dataset, path=path)
+    if generate_new_data:
+        path = create_equal_sample_of_data(path_to_original_dataset=path_to_original_dataset, path=path)
+    else:
+        path = path + name
     train_ds = keras.utils.image_dataset_from_directory(
         directory=path + '/train/',
         labels='inferred',
         label_mode='categorical',
         color_mode='grayscale',
         batch_size=32,
-        image_size=(256, 256))
+        image_size=im_size)
 
     val_ds = keras.utils.image_dataset_from_directory(
         directory=path + '/val/',
@@ -90,7 +98,7 @@ def load_data_using_keras(path='../../dataset', path_to_original_dataset="../../
         label_mode='categorical',
         color_mode='grayscale',
         batch_size=32,
-        image_size=(256, 256))
+        image_size=im_size)
 
     test_ds = keras.utils.image_dataset_from_directory(
         directory=path + '/test/',
@@ -98,6 +106,6 @@ def load_data_using_keras(path='../../dataset', path_to_original_dataset="../../
         label_mode='categorical',
         color_mode='grayscale',
         batch_size=32,
-        image_size=(256, 256))
+        image_size=im_size)
 
     return train_ds, val_ds, test_ds
