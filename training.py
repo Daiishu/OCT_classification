@@ -2,26 +2,13 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from prepare_data.data_loader import load_data_using_keras
 from tensorflow import keras
+from models.models import all_models
 
 train_ds, val_ds, test_ds = load_data_using_keras(path='../', path_to_original_dataset="../OCT2017",
                                                   generate_new_data=True, im_size=(180, 180))
 classes_names = train_ds.class_names
 
-model = tf.keras.models.Sequential([
-    # Note the input shape is the desired size of the image 180x180 with 3 bytes colour
-    tf.keras.layers.Conv2D(16, (3,3), activation='relu', input_shape=(180, 180, 1)),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Conv2D(32, (3,3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Conv2D(64, (3,3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Conv2D(128, (3,3), activation='relu'),
-    tf.keras.layers.MaxPooling2D(2,2),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(512, activation='relu'),
-    tf.keras.layers.Dropout(0.3),
-    tf.keras.layers.Dense(4, activation='sigmoid')
-])
+model = all_models(version='first', image_size=(180, 180, 1))
 
 model.compile(optimizer=keras.optimizers.RMSprop(lr=0.0001),
               loss='binary_crossentropy',

@@ -27,6 +27,9 @@ def create_equal_sample_of_data(path_to_original_dataset="../../OCT2017",
     classes = os.listdir(path_to_original_dataset + "/train")
     class_size = {}
 
+    if '.DS_Store' in classes:
+        classes.remove('.DS_Store')
+
     for cl in classes:
         class_size[cl] = len(os.listdir(path_to_original_dataset + "/train/" + cl))
 
