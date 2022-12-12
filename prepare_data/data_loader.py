@@ -1,7 +1,8 @@
 import os
 import random
 import shutil
-import folder_creation
+import prepare_data.folder_creation as folder_creation
+from tensorflow import keras
 
 
 def create_equal_sample_of_data(path_to_original_dataset="../../OCT2017",
@@ -25,6 +26,9 @@ def create_equal_sample_of_data(path_to_original_dataset="../../OCT2017",
 
     classes = os.listdir(path_to_original_dataset + "/train")
     class_size = {}
+
+    if '.DS_Store' in classes:
+        classes.remove('.DS_Store')
 
     for cl in classes:
         class_size[cl] = len(os.listdir(path_to_original_dataset + "/train/" + cl))
@@ -63,3 +67,48 @@ def remove_ds_store_files(path='../../dataset') -> None:
         for pp in os.listdir(path + '/' + p):
             if os.path.exists(path + '/' + p + '/' + pp + '/.DS_Store'):
                 os.remove(path + '/' + p + '/' + pp + '/.DS_Store')
+
+
+def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017",
+                          generate_new_data=True, name='dataset', im_size=(256, 256)) -> tuple:
+    """
+    Creating tensorflow datasets
+
+    :param path_to_original_dataset: path to original data set
+    :param path: path to new dataset destination
+    :param generate_new_data: default True
+    :param name: Name of dataset
+    :param im_size: default (256, 256)
+    :type im_size: tuple[int, int]
+    :return: train_ds, val_ds, test_ds
+    """
+
+    if generate_new_data:
+        path = create_equal_sample_of_data(path_to_original_dataset=path_to_original_dataset, path=path)
+    else:
+        path = path + name
+    train_ds = keras.utils.image_dataset_from_directory(
+        directory=path + '/train/',
+        labels='inferred',
+        label_mode='categorical',
+        color_mode='grayscale',
+        batch_size=32,
+        image_size=im_size)
+
+    val_ds = keras.utils.image_dataset_from_directory(
+        directory=path + '/val/',
+        labels='inferred',
+        label_mode='categorical',
+        color_mode='grayscale',
+        batch_size=32,
+        image_size=im_size)
+
+    test_ds = keras.utils.image_dataset_from_directory(
+        directory=path + '/test/',
+        labels='inferred',
+        label_mode='categorical',
+        color_mode='grayscale',
+        batch_size=32,
+        image_size=im_size)
+
+    return train_ds, val_ds, test_ds
