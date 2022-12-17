@@ -1,21 +1,22 @@
-import tensorflow as tf
 import matplotlib.pyplot as plt
 from prepare_data.data_loader import load_data_using_keras
 from tensorflow import keras
 from models.models import all_models
 
 train_ds, val_ds, test_ds = load_data_using_keras(path='../', path_to_original_dataset="../OCT2017",
-                                                  generate_new_data=True, im_size=(180, 180))
+                                                  generate_new_data=True, im_size=(256, 256), val_size=49)
 classes_names = train_ds.class_names
 
-model = all_models(version='first', image_size=(180, 180, 1))
+model = all_models(version='first', image_size=(256, 256, 1))
 
 model.compile(optimizer=keras.optimizers.RMSprop(lr=0.0001),
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-history = model.fit(train_ds, validation_data=val_ds, epochs=25, verbose=1)
+history = model.fit(train_ds, validation_data=val_ds, epochs=15, verbose=1)
 results = model.evaluate(test_ds)
+
+model.save('../first')
 
 print("test loss, test acc:", results)
 

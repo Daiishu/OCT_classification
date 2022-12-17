@@ -6,13 +6,14 @@ from tensorflow import keras
 
 
 def create_equal_sample_of_data(path_to_original_dataset="../../OCT2017",
-                                path='../../', name='dataset') -> str:
+                                path='../../', name='dataset', val_size=8) -> str:
     """
     Function to create equal dataset from original data by randomly trimming the data
 
     :param path_to_original_dataset: path to original data set
     :param path: path to new dataset destination
     :param name: name of creating folder
+    :param val_size: size of validation dataset
     :return: path of created data
     """
     path = folder_creation.create_folder_for_data(name=name, path=path)
@@ -51,6 +52,9 @@ def create_equal_sample_of_data(path_to_original_dataset="../../OCT2017",
             for image in random_images:
                 shutil.copyfile(path_to_original_dataset + "/train/" + cl + "/" + image,
                                 path + "/train/" + cl + "/" + image)
+
+    if val_size > 8:
+        migrate_random_sample_from_train_to_val(path=path, val_size=val_size)
     return path
 
 
@@ -69,8 +73,29 @@ def remove_ds_store_files(path='../../dataset') -> None:
                 os.remove(path + '/' + p + '/' + pp + '/.DS_Store')
 
 
+def migrate_random_sample_from_train_to_val(path='../../dataset', val_size=8) -> None:
+    """
+    Migrating random sample of data from train dataset to val dataset.
+    If more than 8, then some data from train dataset migrate to val.
+
+    :param path: path of dataset, default '../../dataset'
+    :param val_size: size of validation data
+    :type val_size: int
+    :return: None
+    """
+    if val_size == 8:
+        raise ValueError("val_size can't be equal or smaller than actual")
+    if os.path.exists(path + '/.DS_Store'):
+        os.remove(path + '/.DS_Store')
+    for p in os.listdir('/'.join([path, 'train'])):
+        random_images_to_move = random.sample(os.listdir('/'.join([path, 'train', p])), val_size-8)
+        for image in random_images_to_move:
+            os.rename('/'.join([path, 'train', p, image]), '/'.join([path, 'val', p, image]))
+
+
 def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017",
-                          generate_new_data=True, name='dataset', im_size=(256, 256)) -> tuple:
+                          generate_new_data=True, name='dataset', im_size=(256, 256),
+                          batch_size=32, val_size=8) -> tuple:
     """
     Creating tensorflow datasets
 
@@ -80,11 +105,16 @@ def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017
     :param name: Name of dataset
     :param im_size: default (256, 256)
     :type im_size: tuple[int, int]
+    :param batch_size: default 32
+    :type batch_size: int
+    :param val_size: size of validation data if more than 8, then some data from train dataset migrate to val.
+    :type val_size: int
     :return: train_ds, val_ds, test_ds
     """
 
     if generate_new_data:
-        path = create_equal_sample_of_data(path_to_original_dataset=path_to_original_dataset, path=path)
+        path = create_equal_sample_of_data(path_to_original_dataset=path_to_original_dataset, path=path,
+                                           val_size=val_size)
     else:
         path = path + name
     train_ds = keras.utils.image_dataset_from_directory(
@@ -92,7 +122,7 @@ def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017
         labels='inferred',
         label_mode='categorical',
         color_mode='grayscale',
-        batch_size=32,
+        batch_size=batch_size,
         image_size=im_size)
 
     val_ds = keras.utils.image_dataset_from_directory(
@@ -100,7 +130,7 @@ def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017
         labels='inferred',
         label_mode='categorical',
         color_mode='grayscale',
-        batch_size=32,
+        batch_size=batch_size,
         image_size=im_size)
 
     test_ds = keras.utils.image_dataset_from_directory(
@@ -108,7 +138,7 @@ def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017
         labels='inferred',
         label_mode='categorical',
         color_mode='grayscale',
-        batch_size=32,
+        batch_size=batch_size,
         image_size=im_size)
 
     return train_ds, val_ds, test_ds
