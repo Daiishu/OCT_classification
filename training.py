@@ -1,41 +1,29 @@
-import matplotlib.pyplot as plt
 from prepare_data.data_loader import load_data_using_keras
 from tensorflow import keras
 from models.models import all_models
+from vizualization.functiones_for_vizualization import confuzion_matrix_print, plot_training_histry
+
+size = 224
 
 train_ds, val_ds, test_ds = load_data_using_keras(path='../', path_to_original_dataset="../OCT2017",
-                                                  generate_new_data=True, im_size=(256, 256), val_size=49)
-classes_names = train_ds.class_names
+                                                  generate_new_data=False, im_size=(size, size), val_size=200,
+                                                  batch_size=32)
 
-model = all_models(version='first', image_size=(256, 256, 1))
+model = all_models(version='EfficientNetV2S', image_size=(size, size, 1))
 
-model.compile(optimizer=keras.optimizers.RMSprop(lr=0.0001),
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
+model.compile(optimizer=keras.optimizers.SGD(learning_rate=0.001),
+              loss=keras.losses.CategoricalCrossentropy(),
+              metrics=['categorical_accuracy'])
 
-history = model.fit(train_ds, validation_data=val_ds, epochs=15, verbose=1)
+history = model.fit(train_ds, validation_data=val_ds, epochs=100, verbose=1, )
 results = model.evaluate(test_ds)
-
-model.save('../first')
 
 print("test loss, test acc:", results)
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
-epochs = range(len(acc))
-# Plot accuracy
-plt.plot(epochs, acc, 'r', label='Training accuracy')
-plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
-plt.title('Training and validation accuracy')
-plt.legend(loc=0)
-plt.figure()
-plt.show()
-# Plot Loss
-plt.plot(epochs, loss, 'r', label='Training Loss')
-plt.plot(epochs, val_loss, 'b', label='Validation Loss')
-plt.title('Training and validation Loss')
-plt.legend(loc=0)
-plt.figure()
-plt.show()
+plot_training_histry(history=history, save_history=True, name='EfficientNetV2S', path='./results', load_history=False)
+
+confuzion_matrix_print(data_set=test_ds, model=model, dst='./results', data_name='test', test_name='EfficientNetV2S')
+confuzion_matrix_print(data_set=val_ds, model=model, dst='./results', data_name='val', test_name='EfficientNetV2S')
+
+model.save_weights('./results/EfficientNetV2S/weights/')
+# model.save('./results/EfficientNetV2S/model')

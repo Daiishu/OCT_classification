@@ -23,7 +23,7 @@ def create_folder_for_data(name='dataset', path='../../') -> str:
         if not os.path.exists(path + name):
             os.mkdir(path + name)
         else:
-            return create_folder_for_data(name)
+            return create_folder_for_data(name, path)
     return path + name
 
 

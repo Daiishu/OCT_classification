@@ -90,12 +90,16 @@ def migrate_random_sample_from_train_to_val(path='../../dataset', val_size=8) ->
     for p in os.listdir('/'.join([path, 'train'])):
         random_images_to_move = random.sample(os.listdir('/'.join([path, 'train', p])), val_size-8)
         for image in random_images_to_move:
-            os.rename('/'.join([path, 'train', p, image]), '/'.join([path, 'val', p, image]))
+            if os.path.exists('/'.join([path, 'val', p, image])):
+                continue
+            else:
+                os.rename('/'.join([path, 'train', p, image]), '/'.join([path, 'val', p, image]))
+
 
 
 def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017",
                           generate_new_data=True, name='dataset', im_size=(256, 256),
-                          batch_size=32, val_size=8) -> tuple:
+                          batch_size=32, val_size=8, colorm='grayscale') -> tuple:
     """
     Creating tensorflow datasets
 
@@ -121,7 +125,7 @@ def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017
         directory=path + '/train/',
         labels='inferred',
         label_mode='categorical',
-        color_mode='grayscale',
+        color_mode=colorm,
         batch_size=batch_size,
         image_size=im_size)
 
@@ -129,7 +133,7 @@ def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017
         directory=path + '/val/',
         labels='inferred',
         label_mode='categorical',
-        color_mode='grayscale',
+        color_mode=colorm,
         batch_size=batch_size,
         image_size=im_size)
 
@@ -137,7 +141,7 @@ def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017
         directory=path + '/test/',
         labels='inferred',
         label_mode='categorical',
-        color_mode='grayscale',
+        color_mode=colorm,
         batch_size=batch_size,
         image_size=im_size)
 
