@@ -28,9 +28,9 @@ def all_models(version='first', image_size=(256, 256, 1)):
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(128, activation='relu'),
             tf.keras.layers.Dropout(0.4),
-            tf.keras.layers.Dense(4, activation='sigmoid')
+            tf.keras.layers.Dense(4, activation='softmax')
         ])
-    if version == 'second':
+    elif version == 'second':
         model = tf.keras.models.Sequential([
             tf.keras.layers.Conv2D(16, (5, 5), activation='relu', input_shape=image_size),
             tf.keras.layers.MaxPooling2D(2, 2),
@@ -48,9 +48,9 @@ def all_models(version='first', image_size=(256, 256, 1)):
             tf.keras.layers.Dense(256, activation='relu'),
             tf.keras.layers.Dropout(0.3),
             tf.keras.layers.Dense(32, activation='relu'),
-            tf.keras.layers.Dense(4, activation='sigmoid')
+            tf.keras.layers.Dense(4, activation='softmax')
         ])
-    if version == 'VGG16':
+    elif version == 'VGG16':
         model = tf.keras.applications.VGG16(
             include_top=True,
             weights=None,
@@ -60,19 +60,8 @@ def all_models(version='first', image_size=(256, 256, 1)):
             classes=4,
             classifier_activation="softmax",
         )
-    if version == 'EfficientNetV2S':
+    elif version == 'EfficientNetV2S':
         model = tf.keras.applications.EfficientNetV2S(
-            include_top=True,
-            weights=None,
-            input_tensor=None,
-            input_shape=image_size,
-            pooling=None,
-            classes=4,
-            classifier_activation="softmax",
-            include_preprocessing=True,
-        )
-    if version == 'EfficientNetV2M':
-        model = tf.keras.applications.EfficientNetV2M(
             include_top=True,
             weights=None,
             input_tensor=None,
