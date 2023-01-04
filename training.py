@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from prepare_data.data_loader import load_data_using_keras
 from tensorflow import keras
 from models.models import all_models
-from vizualization.functiones_for_vizualization import confuzion_matrix_print, plot_training_histry
+from vizualization.functiones_for_vizualization import confuzion_matrix_print, plot_training_histry, get_flops
 import json
 import numpy as np
 import tensorflow as tf
@@ -53,7 +53,7 @@ def print_results_of_trained_models():
         path = os.path.join('./results', i, 'weights', 'latest')
         model_name = re.search(r'(.*)(?=\_0\_|\s)', i, flags=re.MULTILINE)
         lrs = re.search(r'\d+$', i, flags=re.MULTILINE)
-        if lrs:
+        if lrs and lrs != 16:
             lr = float('0.' + lrs.group(0))
         else:
             lr = 0.001
@@ -91,7 +91,61 @@ def print_results_of_trained_models():
         json.dump(output, fp)
 
 
-print_results_of_trained_models()
-# x = ['second', 'second_0_01', 'second_0_0005', 'second_0_005', 'first', 'first_0_01', 'first_0_0005', 'first_0_005', ]
+def plot_avg_lr():
+    data = {}
+    with open('./results/output.json', 'r') as f:
+        data = json.load(f)
+    keys = sorted(data)
+    lrs = ['0.01', '0.005', '0.001', '0.0005']
+    models_names = ['first', 'second', 'VGG16', 'EfficientNetV2S']
+    output = []
+    output2 = []
+    lrs_max = []
+    for lr in lrs:
+        x = [data[key][1] for key in keys if lr in key and 'test' in key]
+        output.append(sum(x)/len(x)*100)
+    for name in models_names:
+        x = [((data[key][1]), key.split(' ')[1].split('_')[0]) for key in keys if name in key and 'test' in key]
+        output2.append(max(x)[0]*100)
+        lrs_max.append(max(x)[1])
+    print(output2, lrs_max)
+
+    fig = plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    plt.bar(np.arange(4), output, color='g')
+    plt.xticks([0, 1, 2, 3], lrs)
+    plt.ylabel("Średnia dokładność [%]", fontweight='bold')
+    plt.xlabel("Wartośći learning rate", fontweight='bold')
+    plt.ylim(95, 99.5)
+    plt.subplot(1, 2, 2)
+    plt.bar(np.arange(4), output2, color='g')
+    plt.xticks([0, 1, 2, 3], ['pierwszy\nlr = ' + lrs_max[0], 'drugi\nlr = ' + lrs_max[1], 'VGG16\nlr = ' + lrs_max[2],
+                              'EfficientNetV2S\nlr = ' + lrs_max[3]])
+    plt.ylabel("Maksymalna dokładność [%]", fontweight='bold')
+    plt.xlabel("Model", fontweight='bold')
+    plt.ylim(95, 99.5)
+    plt.show()
+    fig.savefig('./results/barploty.svg')
+
+
+def print_model_summary():
+    models_names = ['first', 'second', 'VGG16', 'EfficientNetV2S']
+    Total = []
+    Trainable = []
+    Non_trainable = []
+    for model_name in models_names:
+        model = all_models(version=model_name, image_size=(244, 244, 1))
+        model.summary(print_fn=lambda x: Total.append(x) if 'Total' in x else None)
+        model.summary(print_fn=lambda x: Trainable.append(x) if 'Trainable' in x else None)
+        model.summary(print_fn=lambda x: Non_trainable.append(x) if 'Non-trainable' in x else None)
+    print(Total)
+    print(Trainable)
+    print(Non_trainable)
+
+# print_results_of_trained_models()
+# x = ['VGG16', 'VGG16_0_01', 'VGG16_0_0005', 'VGG16_0_005']
 # for i in x:
 #     plot_training_histry(save_history=False, name=i, path='./results', load_history=True)
+
+# plot_avg_lr()
+# print_model_summary()
