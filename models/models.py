@@ -2,6 +2,9 @@ import tensorflow as tf
 from tensorflow import keras
 
 
+supported_models = ['first', 'second', 'VGG16', 'EfficientNetV2S']
+
+
 def all_models(version='first', image_size=(256, 256, 1)):
     """
     Available model:
@@ -11,7 +14,7 @@ def all_models(version='first', image_size=(256, 256, 1)):
     :param image_size: size of image
     :return: model
     """
-    available_versions = ['first', 'EfficientNetV2M', 'EfficientNetV2S', 'second', 'VGG16']
+    available_versions = supported_models
     if version not in available_versions:
         raise ValueError('Model not available')
     if version == 'first':

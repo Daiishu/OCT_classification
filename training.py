@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 
 from prepare_data.data_loader import load_data_using_keras
 from tensorflow import keras
-from models.models import all_models
-from vizualization.functiones_for_vizualization import confuzion_matrix_print, plot_training_histry, get_flops
+from models.models import all_models, supported_models
+from vizualization.functiones_for_vizualization import confuzion_matrix_print, plot_training_histry
 import json
 import numpy as np
+from keras_flops import get_flops
+import time
 import tensorflow as tf
 
 
@@ -142,6 +144,43 @@ def print_model_summary():
     print(Trainable)
     print(Non_trainable)
 
+
+def get_models_flops():
+    names = {
+        'first': 'pierwszy',
+        'second': 'drugi',
+    }
+    output = {}
+    for model_name in supported_models:
+        model = all_models(version=model_name, image_size=(224, 224, 1))
+
+        model.compile(optimizer=keras.optimizers.SGD(learning_rate=0.005),
+                      loss=keras.losses.CategoricalCrossentropy(),
+                      metrics=['categorical_accuracy'])
+        t0 = time.time()
+        flop = round(get_flops(model, 1)/(10**9), 2)
+        t1 = time.time()
+        t = t1 - t0
+        output[model_name] = {}
+        output[model_name]['GFLOPs'] = flop
+        output[model_name]['time'] = round(t, 2)
+        output[model_name]['GFLOPS'] = round(flop/t, 2)
+
+    with open('./results/flops_in_G.json', 'w') as fp:
+        json.dump(output, fp)
+
+    x = [item["GFLOPs"] for item in output.values()]
+    labels = [names[item] if item in names.keys() else item for item in output.keys()]
+
+    fig = plt.figure()
+    plt.bar(np.arange(4), x, color='b')
+    plt.xticks([0, 1, 2, 3], labels)
+    plt.ylabel("FLOPs [G]", fontweight='bold')
+    plt.xlabel("Model", fontweight='bold')
+    fig.savefig('./results/GFLOPs.svg')
+
+
+get_models_flops()
 # print_results_of_trained_models()
 # x = ['VGG16', 'VGG16_0_01', 'VGG16_0_0005', 'VGG16_0_005']
 # for i in x:
