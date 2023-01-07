@@ -96,7 +96,6 @@ def migrate_random_sample_from_train_to_val(path='../../dataset', val_size=8) ->
                 os.rename('/'.join([path, 'train', p, image]), '/'.join([path, 'val', p, image]))
 
 
-
 def load_data_using_keras(path='../../', path_to_original_dataset="../../OCT2017",
                           generate_new_data=True, name='dataset', im_size=(256, 256),
                           batch_size=32, val_size=8, colorm='grayscale') -> tuple:

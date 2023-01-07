@@ -4,3 +4,4 @@ pydot
 graphviz
 seaborn
 pandas
+get_flops
