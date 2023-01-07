@@ -1,40 +1,35 @@
-import tensorflow as tf
-import matplotlib.pyplot as plt
 from prepare_data.data_loader import load_data_using_keras
 from tensorflow import keras
-from models.models import all_models
+from models.models import all_models, supported_models
+from vizualization.functiones_for_vizualization import confusion_matrix_print, plot_training_history, get_models_flops,\
+    save_results_of_trained_models, plot_avg_lr, save_numbers_of_params
 
-train_ds, val_ds, test_ds = load_data_using_keras(path='../', path_to_original_dataset="../OCT2017",
-                                                  generate_new_data=True, im_size=(180, 180))
-classes_names = train_ds.class_names
 
-model = all_models(version='first', image_size=(180, 180, 1))
+def training_data(size_im=224, generate_new_data=False, model_name='first', lr=0.001, log_folder_name=None,
+                  patience=3):
+    if log_folder_name is None:
+        log_folder_name = model_name
 
-model.compile(optimizer=keras.optimizers.RMSprop(lr=0.0001),
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
+    train_ds, val_ds, test_ds = load_data_using_keras(path='../', path_to_original_dataset="../OCT2017",
+                                                      generate_new_data=generate_new_data, im_size=(size_im, size_im),
+                                                      val_size=200, batch_size=32)
 
-history = model.fit(train_ds, validation_data=val_ds, epochs=25, verbose=1)
-results = model.evaluate(test_ds)
+    model = all_models(version=model_name, image_size=(size_im, size_im, 1))
 
-print("test loss, test acc:", results)
+    model.compile(optimizer=keras.optimizers.SGD(learning_rate=lr),
+                  loss=keras.losses.CategoricalCrossentropy(),
+                  metrics=['categorical_accuracy'])
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
-epochs = range(len(acc))
-# Plot accuracy
-plt.plot(epochs, acc, 'r', label='Training accuracy')
-plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
-plt.title('Training and validation accuracy')
-plt.legend(loc=0)
-plt.figure()
-plt.show()
-# Plot Loss
-plt.plot(epochs, loss, 'r', label='Training Loss')
-plt.plot(epochs, val_loss, 'b', label='Validation Loss')
-plt.title('Training and validation Loss')
-plt.legend(loc=0)
-plt.figure()
-plt.show()
+    callback = keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience)
+
+    history = model.fit(train_ds, validation_data=val_ds, epochs=100, verbose=1, callbacks=[callback])
+    results = model.evaluate(test_ds)
+
+    print("test loss, test acc:", results)
+
+    plot_training_history(history=history, save_history=True, name=log_folder_name, path='./results', load_history=False)
+
+    confusion_matrix_print(data_set=test_ds, model=model, dst='./results', data_name='test', model_name=log_folder_name)
+    confusion_matrix_print(data_set=val_ds, model=model, dst='./results', data_name='val', model_name=log_folder_name)
+
+    model.save_weights('./results/' + log_folder_name + '/weights/latest')
